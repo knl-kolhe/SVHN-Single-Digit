@@ -14,7 +14,7 @@ X_test = X_test.astype('float32')
 X_train /= 255
 X_test /= 255
 
-print(X_train.shape)
+#print(X_train.shape)
 
 X_train = X_train[np.newaxis,...]
 X_train = np.swapaxes(X_train,0,4).squeeze()
@@ -30,8 +30,6 @@ train_greyscale = rgb2gray(X_train).astype(np.float32)
 test_greyscale = rgb2gray(X_test).astype(np.float32)
 
 del X_train,X_test
-print("Training Set", train_greyscale.shape)
-print("Test Set", test_greyscale.shape)
 
 print(y_train.shape)
 print(y_test.shape)
@@ -43,6 +41,14 @@ from keras.utils import to_categorical
 y_train = to_categorical(y_train, 10)
 y_test = to_categorical(y_test, 10)
 
+#create a validation set
+from sklearn.model_selection import train_test_split
+test_greyscale, val_greyscale, y_test, y_val = train_test_split(test_greyscale, y_test, test_size=0.30, random_state=42)
+
+
+print("Training Set", train_greyscale.shape)
+print("Test Set", test_greyscale.shape)
+print("Validation Set", val_greyscale.shape)
 
 #create a convolutional neural network
 from keras.models import Sequential
@@ -84,6 +90,8 @@ import tensorflow as tf
 with tf.device('/gpu:0'):
     classifier.fit(train_greyscale, y_train, batch_size=128, nb_epoch=10, verbose=1, validation_data=(test_greyscale, y_test))
     
-score = classifier.evaluate(test_greyscale, y_test, verbose=0)
+#evaluate performance on validation set
+score = classifier.evaluate(val_greyscale, y_val, verbose=0)
+
 print('loss:', score[0])
 print('Test accuracy:', score[1])
